@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from shared.app_factory import create_app
 from shared.config.settings import get_settings
 from shared.logging.logger import configure_logging
+
 from .validator import validate
 
 settings = get_settings()

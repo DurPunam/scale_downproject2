@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from shared.app_factory import create_app
 from shared.config.settings import get_settings
 from shared.logging.logger import configure_logging
+
 from .models import CompressBatchRequest, CompressBatchResponse
 from .scaledown import ScaleDownClient
 

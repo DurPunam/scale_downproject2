@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-import statistics
 import time
 import uuid
 from collections import deque
+from collections.abc import Iterable
 from dataclasses import dataclass
-from enum import Enum
-from typing import Deque, Iterable, List, Tuple
+from enum import StrEnum
 
 import httpx
 import numpy as np
@@ -16,7 +15,7 @@ from sentence_transformers import SentenceTransformer
 from shared.config.settings import Settings
 
 
-class CircuitState(str, Enum):
+class CircuitState(StrEnum):
     CLOSED = "closed"
     OPEN = "open"
     HALF_OPEN = "half_open"
@@ -31,7 +30,7 @@ class CallMetric:
 class SlidingMetrics:
     def __init__(self, capacity: int = 1000) -> None:
         self._capacity = capacity
-        self._items: Deque[CallMetric] = deque(maxlen=capacity)
+        self._items: deque[CallMetric] = deque(maxlen=capacity)
 
     def add(self, latency_ms: float, tokens: int) -> None:
         self._items.append(CallMetric(latency_ms=latency_ms, tokens=tokens))
@@ -165,11 +164,11 @@ class ScaleDownClient:
 
     async def compress_batch(
         self,
-        items: Iterable[Tuple[str, str]],
+        items: Iterable[tuple[str, str]],
         queue_depth: int,
         rate_limit_rps: float,
         shadow_mode: bool,
-    ) -> List[dict]:
+    ) -> list[dict]:
         batch = [{"id": item_id, "text": text} for item_id, text in items]
         if not batch:
             return []
@@ -213,7 +212,7 @@ class ScaleDownClient:
     def get_batch_size(self, queue_depth: int, rate_limit_rps: float) -> int:
         return self._batcher.calculate_batch_size(queue_depth, rate_limit_rps)
 
-    async def _fallback_batch(self, batch: List[dict]) -> List[dict]:
+    async def _fallback_batch(self, batch: list[dict]) -> list[dict]:
         results = []
         for item in batch:
             compressed = self._fallback.compress_with_t5(item["text"])
@@ -233,7 +232,7 @@ class ScaleDownClient:
             )
         return results
 
-    def _format_results(self, batch: List[dict], data: dict) -> List[dict]:
+    def _format_results(self, batch: list[dict], data: dict) -> list[dict]:
         results = []
         compressed_items = {item["id"]: item for item in data.get("results", [])}
         for item in batch:
@@ -252,7 +251,7 @@ class ScaleDownClient:
             )
         return results
 
-    async def _shadow_compare(self, batch: List[dict], results: List[dict]) -> None:
+    async def _shadow_compare(self, batch: list[dict], results: list[dict]) -> None:
         for item, result in zip(batch, results):
             original = item["text"]
             compressed = result["compressed"]

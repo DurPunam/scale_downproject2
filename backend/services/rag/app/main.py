@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from shared.app_factory import create_app
 from shared.config.settings import get_settings
 from shared.logging.logger import configure_logging
+
 from .engine import rewrite_query, sanitize_query
 from .models import RagAnswer, RagQueryRequest
 
@@ -22,4 +23,8 @@ async def rag_query(req: RagQueryRequest) -> RagAnswer:
         return RagAnswer(answer="Request blocked by safety filters.", sources=[])
     rewritten = rewrite_query(safe_query)
     # Placeholder for retrieval and generation pipeline
-    return RagAnswer(answer=f"RAG response for: {rewritten}", sources=[], tokens_used=len(rewritten.split()))
+    return RagAnswer(
+        answer=f"RAG response for: {rewritten}",
+        sources=[],
+        tokens_used=len(rewritten.split()),
+    )

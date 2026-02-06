@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import aiofiles
 import aioredis
@@ -13,13 +13,15 @@ class CacheLayer:
     def __init__(self, redis_url: str, disk_path: str) -> None:
         self._redis_url = redis_url
         self._disk_path = Path(disk_path)
-        self._redis: Optional[aioredis.Redis] = None
+        self._redis: aioredis.Redis | None = None
 
     async def connect(self) -> None:
-        self._redis = await aioredis.from_url(self._redis_url, encoding="utf-8", decode_responses=True)
+        self._redis = await aioredis.from_url(
+            self._redis_url, encoding="utf-8", decode_responses=True
+        )
         self._disk_path.mkdir(parents=True, exist_ok=True)
 
-    async def get(self, key: str) -> Optional[dict[str, Any]]:
+    async def get(self, key: str) -> dict[str, Any] | None:
         if not self._redis:
             raise RuntimeError("Cache not connected")
         val = await self._redis.get(key)
@@ -39,11 +41,11 @@ class CacheLayer:
     def _hash_key(self, key: str) -> str:
         return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
-    async def _read_disk(self, key: str) -> Optional[dict[str, Any]]:
+    async def _read_disk(self, key: str) -> dict[str, Any] | None:
         path = self._disk_path / self._hash_key(key)
         if not path.exists():
             return None
-        async with aiofiles.open(path, "r", encoding="utf-8") as handle:
+        async with aiofiles.open(path, encoding="utf-8") as handle:
             data = await handle.read()
             return json.loads(data)
 

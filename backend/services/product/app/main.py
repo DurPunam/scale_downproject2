@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import FastAPI
 from pydantic import BaseModel
-from datetime import datetime
 
 from shared.app_factory import create_app
 from shared.config.settings import get_settings

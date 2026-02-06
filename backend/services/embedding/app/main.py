@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import numpy as np
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
-import numpy as np
 
 from shared.app_factory import create_app
 from shared.config.settings import get_settings
 from shared.logging.logger import configure_logging
+
 from .alignment import AlignmentModel
 
 settings = get_settings()
